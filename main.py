@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger(__name__)
 
 # ── Hyperparameters ──
-VOCAB_SIZE = 200
+VOCAB_SIZE = 4000
 D_MODEL = 256
 N_HEADS = 8
 N_LAYERS = 3
