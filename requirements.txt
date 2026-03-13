@@ -5,3 +5,5 @@ ipykernel
 torch
 torchvision
 transformers
+pytorch-lightning
+datasets
