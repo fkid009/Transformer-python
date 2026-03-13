@@ -20,7 +20,7 @@ class MultiHeadAttention(nn.Module):
     """
 
     def __init__(self, d_model: int, n_heads: int):
-        super(MultiHeadAttention, self).__init__()
+        super().__init__()
         assert d_model % n_heads == 0, "d_model must be divisible by n_heads"
 
         self.d_model = d_model
@@ -53,20 +53,21 @@ class MultiHeadAttention(nn.Module):
         batch_size = q.size(0)
 
         # Linear projections and split into multiple heads
-        q = self.Q(q).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2) # (batch_size, n_heads, seq_len_q, d_k)
-        k = self.K(k).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2) # (batch_size, n_heads, seq_len_q, d_k)
-        v = self.V(v).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2) # (batch_size, n_heads, seq_len_q, d_k)
+        q = self.Q(q).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # (batch_size, n_heads, seq_len_q, d_k)
+        k = self.K(k).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # (batch_size, n_heads, seq_len_k, d_k)
+        v = self.V(v).view(batch_size, -1, self.n_heads, self.d_k).transpose(1, 2)  # (batch_size, n_heads, seq_len_k, d_k)
 
         # Scaled dot-product attention
-        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.d_k)
+        scores = torch.matmul(q, k.transpose(-2, -1)) / math.sqrt(self.d_k)  # (batch_size, n_heads, seq_len_q, seq_len_k)
 
         if mask is not None:
             scores = scores.masked_fill(mask == 0, float('-inf'))
 
-        attn_weights = torch.softmax(scores, dim=-1)                # (batch_size, n_heads, seq_len_q, seq_len_k)
-        attn_output = torch.matmul(attn_weights, v)                 # (batch_size, n_heads, seq_len_q, d_k)
+        attn_weights = torch.softmax(scores, dim=-1)    # (batch_size, n_heads, seq_len_q, seq_len_k)
+        attn_output = torch.matmul(attn_weights, v)     # (batch_size, n_heads, seq_len_q, d_k)
 
         # Concatenate heads and pass through output projection
         attn_output = attn_output.transpose(1, 2).contiguous().view(batch_size, -1, self.d_model)
-        output = self.output_linear(attn_output) # (batch_size, n_heads, seq_len_q, d_k)
+        output = self.output_linear(attn_output)         # (batch_size, seq_len_q, d_model)
+
         return output

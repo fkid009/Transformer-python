@@ -1,10 +1,11 @@
-import torch
 import torch.nn as nn
 import pytorch_lightning as pl
 from torch.utils.data import Dataset
 
 from tokenizer import Tokenizer
 from transformer import Transformer
+
+import torch
 
 
 class TranslationDataset(Dataset):
@@ -30,8 +31,8 @@ class TranslationDataset(Dataset):
         src_text = self.data[idx]["en"]
         tgt_text = self.data[idx]["de"]
 
-        src_ids = self.src_tokenizer.encode(src_text)               # [SOS] ... [EOS]
-        tgt_ids = self.tgt_tokenizer.encode(tgt_text)               # [SOS] ... [EOS]
+        src_ids = self.src_tokenizer.encode(src_text)
+        tgt_ids = self.tgt_tokenizer.encode(tgt_text)
 
         src_ids = self.src_tokenizer.pad(src_ids, self.max_len)
         tgt_ids = self.tgt_tokenizer.pad(tgt_ids, self.max_len)
@@ -90,16 +91,15 @@ class TransformerLitModule(pl.LightningModule):
         return self.model(src, tgt)
 
     def _compute_loss(self, batch):
-        src = batch["src"]                          # (batch, max_len)
-        tgt = batch["tgt"]                          # (batch, max_len)
+        src = batch["src"]
+        tgt = batch["tgt"]
 
-        # Teacher forcing: 입력은 [SOS] ... tokens, 정답은 tokens ... [EOS]
-        tgt_input = tgt[:, :-1]                     # (batch, max_len - 1)
-        tgt_label = tgt[:, 1:]                      # (batch, max_len - 1)
+        # Teacher forcing: input = [SOS] ... tokens, label = tokens ... [EOS]
+        tgt_input = tgt[:, :-1]
+        tgt_label = tgt[:, 1:]
 
-        output = self.model(src, tgt_input)         # (batch, max_len - 1, tgt_vocab_size)
+        output = self.model(src, tgt_input)
 
-        # CrossEntropyLoss expects (batch * seq_len, vocab_size)
         output = output.reshape(-1, output.size(-1))
         tgt_label = tgt_label.reshape(-1)
 
@@ -127,7 +127,7 @@ class TransformerLitModule(pl.LightningModule):
         }
 
 
-def build_tokenizers(dataset, vocab_size=8000):
+def build_tokenizers(dataset, vocab_size: int = 8000):
     """Build source and target tokenizers from Multi30k dataset."""
     src_texts = [item["en"] for item in dataset]
     tgt_texts = [item["de"] for item in dataset]
@@ -139,5 +139,3 @@ def build_tokenizers(dataset, vocab_size=8000):
     tgt_tokenizer.fit(tgt_texts, vocab_size=vocab_size)
 
     return src_tokenizer, tgt_tokenizer
-
-
