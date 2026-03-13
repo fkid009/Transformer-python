@@ -82,7 +82,7 @@ class Transformer(nn.Module):
 
     def _pad_mask(self, seq: torch.Tensor) -> torch.Tensor:
         """Create padding mask: 1 for real tokens, 0 for padding."""
-        return (seq != self.pad_idx).unsqueeze(1).unsqueeze(2)  # (batch_size, 1, 1, seq_len)
+        return (seq != self.pad_idx).unsqueeze(1).unsqueeze(2).to(seq.device)  # (batch_size, 1, 1, seq_len)
 
     def _causal_mask(self, seq_len: int) -> torch.Tensor:
         """Create causal (look-ahead) mask: lower triangular = 1, upper = 0."""

@@ -1,5 +1,6 @@
 import logging
 
+import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from datasets import load_dataset
@@ -60,6 +61,10 @@ def main():
     logger.info(f"Total parameters: {total_params:,}")
 
     # ── Step 5: Train ──
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    logger.info(f"Device: {device}")
+    if device == "cuda":
+        logger.info(f"GPU: {torch.cuda.get_device_name(0)}")
     logger.info("Starting training...")
     trainer = pl.Trainer(
         max_epochs=MAX_EPOCHS,
